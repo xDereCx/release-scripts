@@ -79,28 +79,20 @@ class ReleaseFile():
         trains = []
         for release in files:
             # x.x.x
-            regex = re.compile(r'([0-9]+)\.[0-9]\.[0-9]+')
+            regex = re.compile(r'([0-9]+).0-devel')
             if regex.search(release):
                 trains.append(regex.findall(release)[0])
-            # x.90.x
-            regex = re.compile(r'([0-9]+)\.90\.[0-9]+')
-            if regex.search(release):
-                trains.append(str(int(regex.findall(release)[0]) + 1))
-            # x.95.x
-            regex = re.compile(r'([0-9]+)\.95\.[0-9]+')
-            if regex.search(release):
-                trains.append(str(int(regex.findall(release)[0]) + 1))
         
         trains = list(set(trains))
         
         for i,train in enumerate(trains):
-            trains[i] = 'LibreELEC-' + train + '.0'
+            trains[i] = 'Retroplayer-' + train + '.0'
             
         print(trains)
         
         builds = []
         for release in files:
-            regex = re.compile(r'LibreELEC-(.*)-[0-9]')
+            regex = re.compile(r'LibreELEC-(.*)-[0-9].0-devel')
             if regex.match(release):
                 builds.append(regex.findall(release)[0])
         builds = list(set(builds))
@@ -114,12 +106,11 @@ class ReleaseFile():
             for build in builds:
                 self.update_json[train]['project'][build] = {'releases': {}}
                 self.update_json[train]['project'][build]['displayName'] = self.display_name[build]
-                releases = [x for x in files if (re.search(major_version[0] + '+.[0-9].[0-9]+', x) or 
-                                                 re.search(str(int(major_version[0]) - 1) + '+.90.[0-9]+', x) or 
-                                                 re.search(str(int(major_version[0]) - 1) + '+.95.[0-9]+', x)) and 
-                                                 re.search(build, x) and 
-                                                 re.search('.tar', x) and not 
-                                                 re.search('noobs', x)]
+                
+                releases = [x for x in files if re.search(major_version[0] + '+.0-devel', x) and
+                                                re.search(build, x) and 
+                                                re.search('.tar', x)]
+                            
                 for i,release in enumerate(sorted(releases)):
                     key = "%s;%s;%s" % (train, build, release)
                     if key not in self.oldhash:
@@ -192,5 +183,5 @@ if len(sys.argv) < 2:
     sys.exit(1)
 '''
             
-with ReleaseFile('/var/www/releases.libreelec.tv/', 'http://releases.libreelec.tv/') as rf:
+with ReleaseFile('/home/lrusak/www/retroplayer/', 'http://lrusak.libreelec.tv/retroplayer/') as rf:
     rf.UpdateAll()
